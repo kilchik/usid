@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>usid</title>
+</head>
+<body>
+
+<ul id="history"></ul>
+<div id="input">
+    <span><input type="radio" checked>Купить</span><span><input type="radio">Отдать</span>
+
+    <p><input id="payment-title" type="text" placeholder="Покупка"></p>
+    <p><input type="text" placeholder="Сумма"></p>
+
+    <ul>
+    <li><input type="checkbox">Вася</li>
+    <li><input type="checkbox">Петя</li>
+    <li><input type="checkbox">Маша</li>
+    </ul>
+
+    <button id="send-button">Ок</button>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    let socket = null;
+    let history = $("#history");
+    $(function () {
+        $("#send-button").click(function () {
+            let title = $("#payment-title");
+            socket.send(title.val());
+            title.val("");
+        });
+        socket = new WebSocket("ws://localhost:9632/usid/group");
+        socket.onmessage = function (e) {
+            console.log(`got message ${e.data}`);
+            history.append($("<li>").text(e.data));
+        }
+    })
+</script>
+
+</body>
+</html>
