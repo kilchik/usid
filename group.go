@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
-	"math/rand"
 	"net/http"
 )
 
@@ -25,14 +23,19 @@ func newGroup(name string) *group {
 }
 
 func (g *group) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	logI.Println("in group", r.Cookies())
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logE.Printf("upgrade ws connection for group %q: %v", g.name, err)
 	}
 
-	randBytes := make([]byte, 4)
-	rand.Read(randBytes)
-	userName := base64.StdEncoding.EncodeToString(randBytes)
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		logE.Printf("extract cookie: %v", err)
+		return
+	}
+
+	userName := cookie.Value
 	u := newUser(userName, conn, g)
 	g.join <- u
 	defer func() {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
+	"time"
 )
 
 type user struct {
@@ -28,16 +28,17 @@ func (u *user) read() {
 			logE.Printf("read input of user %s: %v", u.name, err)
 			break
 		}
-		u.group.forward <- message{u, string(msg)}
+		logI.Printf("read message: %q", string(msg))
+		logI.Printf("forward message: %v", message{u.name, string(msg), time.Now().Local()})
+		u.group.forward <- message{u.name, string(msg), time.Now().Local()}
 	}
 }
 
 func (u *user) write() {
 	defer u.conn.Close()
 	for msg := range u.send {
-		logI.Printf("write %q to user %s", msg.text, u.name)
-		text := fmt.Sprintf("%s: %s", msg.from.name, msg.text)
-		if err := u.conn.WriteMessage(websocket.TextMessage, []byte(text)); err != nil {
+		logI.Printf("write %q to user %s", msg.Text, u.name)
+		if err := u.conn.WriteJSON(&msg); err != nil {
 			logE.Printf("write to user %s: %v", u.name, err)
 			break
 		}

@@ -32,11 +32,15 @@
             socket.send(title.val());
             title.val("");
         });
-        socket = new WebSocket("ws://localhost:9632/usid/group");
+        socket = new WebSocket("ws://{{.Host}}/group");
         socket.onmessage = function (e) {
+            let msg = JSON.parse(e.data);
             console.log(`got message ${e.data}`);
-            history.append($("<li>").text(e.data));
-        }
+            history.append($("<li>").append($("<i>").text(msg.at), $("<strong>").text(msg.from + ": "), $("<span>").text(msg.text)));
+        };
+        socket.onclose = function() {
+            alert("Connection has been closed.");
+        };
     })
 </script>
 
